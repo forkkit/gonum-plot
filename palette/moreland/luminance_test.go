@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/exp/rand"
 
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 func TestCreateLuminance(t *testing.T) {
@@ -102,19 +102,19 @@ func luminanceEqualWithin(a, b *luminance, tol float64) bool {
 		}
 	}
 	for i, av := range a.scalars {
-		if !floats.EqualWithinAbsOrRel(av, b.scalars[i], tol, tol) {
+		if !scalar.EqualWithinAbsOrRel(av, b.scalars[i], tol, tol) {
 			return false
 		}
 	}
-	return floats.EqualWithinAbsOrRel(a.alpha, b.alpha, tol, tol) &&
-		floats.EqualWithinAbsOrRel(a.max, b.max, tol, tol) &&
-		floats.EqualWithinAbsOrRel(a.min, b.min, tol, tol)
+	return scalar.EqualWithinAbsOrRel(a.alpha, b.alpha, tol, tol) &&
+		scalar.EqualWithinAbsOrRel(a.max, b.max, tol, tol) &&
+		scalar.EqualWithinAbsOrRel(a.min, b.min, tol, tol)
 }
 
 func cieLABEqualWithin(a, b cieLAB, tol float64) bool {
-	return floats.EqualWithinAbsOrRel(a.L, b.L, tol, tol) &&
-		floats.EqualWithinAbsOrRel(a.A, b.A, tol, tol) &&
-		floats.EqualWithinAbsOrRel(a.B, b.B, tol, tol)
+	return scalar.EqualWithinAbsOrRel(a.L, b.L, tol, tol) &&
+		scalar.EqualWithinAbsOrRel(a.A, b.A, tol, tol) &&
+		scalar.EqualWithinAbsOrRel(a.B, b.B, tol, tol)
 }
 
 func TestExtendedBlackBody(t *testing.T) {
@@ -141,12 +141,6 @@ func TestExtendedBlackBody(t *testing.T) {
 			t.Errorf("color %d: have %+v, want %+v", i, c, want[i])
 		}
 	}
-}
-
-// floatToUint32 converts a float64 in the range [0, 1] to a uint32 in the range
-// [0, 0xffff].
-func floatToUint32(f float64) uint32 {
-	return uint32(f * 0xffff)
 }
 
 func BenchmarkLuminance_At(b *testing.B) {

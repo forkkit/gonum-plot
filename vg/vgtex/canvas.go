@@ -147,25 +147,29 @@ func (c *Canvas) Stroke(p vg.Path) {
 	if c.context().linew <= 0 {
 		return
 	}
+	c.Push()
 	c.wstyle()
 	c.wpath(p)
 	c.wtex(`\pgfusepath{stroke}`)
-	c.wtex("")
+	c.Pop()
 }
 
 // Fill implements the vg.Canvas.Fill method.
 func (c *Canvas) Fill(p vg.Path) {
+	c.Push()
 	c.wstyle()
 	c.wpath(p)
-	c.wtex(`\pgfusepath{fill, stroke}`)
-	c.wtex("")
+	c.wtex(`\pgfusepath{fill}`)
+	c.Pop()
 }
 
 // FillString implements the vg.Canvas.FillString method.
 func (c *Canvas) FillString(f vg.Font, pt vg.Point, text string) {
+	c.Push()
 	c.wcolor()
 	pt.X += 0.5 * f.Width(text)
-	c.wtex(`\pgftext[base,at={\pgfpoint{%gpt}{%gpt}}]{%s}`, pt.X, pt.Y, text)
+	c.wtex(`\pgftext[base,at={\pgfpoint{%gpt}{%gpt}}]{{\fontsize{%gpt}{%gpt}\selectfont %s}}`, pt.X, pt.Y, f.Size, f.Size, text)
+	c.Pop()
 }
 
 // DrawImage implements the vg.Canvas.DrawImage method.
@@ -209,6 +213,7 @@ func (c *Canvas) wstyle() {
 
 func (c *Canvas) wdash() {
 	if len(c.context().dashArray) == 0 {
+		c.wtex(`\pgfsetdash{}{0pt}`)
 		return
 	}
 	str := `\pgfsetdash{`
@@ -229,16 +234,15 @@ func (c *Canvas) wcolor() {
 		col = color.Black
 	}
 	r, g, b, a := col.RGBA()
-	alpha := 255.0 / float64(a)
 	// FIXME(sbinet) \color will last until the end of the current TeX group
 	// use \pgfsetcolor and \pgfsetstrokecolor instead.
 	// it needs a named color: define it on the fly (storing it at the beginning
 	// of the document.)
 	c.wtex(
 		`\color[rgb]{%g,%g,%g}`,
-		float64(r)*alpha/255.0,
-		float64(g)*alpha/255.0,
-		float64(b)*alpha/255.0,
+		float64(r)/math.MaxUint16,
+		float64(g)/math.MaxUint16,
+		float64(b)/math.MaxUint16,
 	)
 
 	opacity := float64(a) / math.MaxUint16
@@ -275,7 +279,7 @@ func (c *Canvas) wpath(p vg.Path) {
 		case vg.CloseComp:
 			c.wtex("%% path-close")
 		default:
-			panic(fmt.Errorf("vgtex: unknown path component type: %v\n", comp.Type))
+			panic(fmt.Errorf("vgtex: unknown path component type: %v", comp.Type))
 		}
 	}
 }

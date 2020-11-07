@@ -23,7 +23,9 @@ import (
 )
 
 func TestIssue179(t *testing.T) {
-	scatter, err := plotter.NewScatter(plotter.XYs{{1, 1}, {0, 1}, {0, 0}})
+	scatter, err := plotter.NewScatter(plotter.XYs{
+		{X: 1, Y: 1}, {X: 0, Y: 1}, {X: 0, Y: 0},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +53,7 @@ func TestIssue179(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !ok {
-		ioutil.WriteFile("testdata/issue179.jpg", b.Bytes(), 0644)
+		_ = ioutil.WriteFile("testdata/issue179.jpg", b.Bytes(), 0644)
 		t.Fatalf("images differ")
 	}
 }
@@ -98,9 +100,9 @@ func TestIssue540(t *testing.T) {
 	}
 
 	xys := plotter.XYs{
-		plotter.XY{0, 0},
-		plotter.XY{1, 1},
-		plotter.XY{2, 2},
+		plotter.XY{X: 0, Y: 0},
+		plotter.XY{X: 1, Y: 1},
+		plotter.XY{X: 2, Y: 2},
 	}
 
 	p.Title.Text = "My title"
@@ -115,6 +117,15 @@ func TestIssue540(t *testing.T) {
 
 	p.Add(lines, points)
 	p.Add(plotter.NewGrid())
+
+	if *cmpimg.GenerateTestData {
+		// Recreate Golden images and exit.
+		err = p.Save(100, 100, "testdata/issue540_golden.png")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
 
 	err = p.Save(100, 100, "testdata/issue540.png")
 	if err != nil {

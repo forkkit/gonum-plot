@@ -30,7 +30,7 @@ func TestNewWith(t *testing.T) {
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
 
-	scatter, err := plotter.NewScatter(plotter.XYs{{1, 1}, {0, 1}, {0, 0}})
+	scatter, err := plotter.NewScatter(plotter.XYs{{X: 1, Y: 1}, {X: 0, Y: 1}, {X: 0, Y: 0}})
 	if err != nil {
 		t.Fatalf("could not create scatter: %v", err)
 	}
@@ -67,13 +67,13 @@ func TestHtmlEscape(t *testing.T) {
 	p.X.Label.Text = "X"
 	p.Y.Label.Text = "Y"
 
-	scatter, err := plotter.NewScatter(plotter.XYs{{1, 1}, {0, 1}, {0, 0}})
+	scatter, err := plotter.NewScatter(plotter.XYs{{X: 1, Y: 1}, {X: 0, Y: 1}, {X: 0, Y: 0}})
 	if err != nil {
 		t.Fatalf("could not create scatter: %v", err)
 	}
 	p.Add(scatter)
 
-	line, err := plotter.NewLine(plotter.XYs{{1, 1}, {0, 1}, {0, 0}})
+	line, err := plotter.NewLine(plotter.XYs{{X: 1, Y: 1}, {X: 0, Y: 1}, {X: 0, Y: 0}})
 	if err != nil {
 		t.Fatalf("could not create scatter: %v", err)
 	}
@@ -86,6 +86,15 @@ func TestHtmlEscape(t *testing.T) {
 	b := new(bytes.Buffer)
 	if _, err = c.WriteTo(b); err != nil {
 		t.Fatal(err)
+	}
+
+	if *cmpimg.GenerateTestData {
+		// Recreate Golden images and exit.
+		err = ioutil.WriteFile("testdata/scatter_line_golden.svg", b.Bytes(), 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
 	}
 
 	want, err := ioutil.ReadFile("testdata/scatter_line_golden.svg")
